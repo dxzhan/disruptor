@@ -6,8 +6,15 @@
     - Minimum Java version now 11
     - Removed OSGI bundle fields from `MANIFEST.MF`
     - Issue #323 - `WorkerPool` and `WorkProcessor` have been removed, no more `Disruptor::handleEventsWithWorkerPool`
-    - Deprecated ThreadHints.onSpinWait()
     - `Disruptor` constructors using Executor have been removed. Use ThreadFactory instead.
+ - Deprecated ThreadHints.onSpinWait()
+ - FatalExceptionHandler and IgnoreExceptionHandler now use the JDK 9 Platform Logging API, i.e. System.Logger
+ - Add rewind batch feature to the BatchEventProcessor
+ - Added documentation to EventPoller
+
+## 3.4.3
+
+- Add Automatic-Module-Name to MANIFEST.MF
 
 ## 3.4.2
 

@@ -19,8 +19,10 @@ plugins {
     id 'signing'
     id 'checkstyle'
     id 'idea'
-    id "com.github.erizo.gradle.jcstress" version "0.8.6"
-    id 'org.asciidoctor.jvm.convert' version '3.1.0'
+    id "io.github.reyerizo.gradle.jcstress" version "0.8.11"
+    id 'org.asciidoctor.jvm.convert' version '3.3.0'
+    id 'org.asciidoctor.jvm.gems' version '3.3.0'
+    id "me.champeau.jmh" version "0.6.5"
 }
 
 group = 'com.lmax'
@@ -32,7 +34,7 @@ ext {
     fullName = 'Disruptor Framework'
     fullDescription = 'Disruptor - Concurrent Programming Framework'
     teamName = 'LMAX Disruptor Development Team'
-    siteUrl = 'http://lmax-exchange.github.com/disruptor'
+    siteUrl = 'https://lmax-exchange.github.io/disruptor'
     sourceUrl = 'git@github.com:LMAX-Exchange/disruptor.git'
     moduleName = 'com.lmax.disruptor'
 }
@@ -43,17 +45,18 @@ apply from: 'gradle/jmh.gradle'
 apply from: 'gradle/asciidoc.gradle'
 apply from: 'gradle/jcstress.gradle'
 
-wrapper.gradleVersion = '6.5'
+wrapper.gradleVersion = '7.1'
 
 repositories {
     mavenCentral()
+    ruby.gems()
 }
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
-    checkstyle 'com.puppycrawl.tools:checkstyle:8.12'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.0'
+    checkstyle 'com.puppycrawl.tools:checkstyle:8.45'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 }
 
@@ -72,6 +75,10 @@ compileTestJava {
 
 test {
     useJUnitPlatform()
+    systemProperties = [
+            'junit.jupiter.execution.parallel.enabled': 'true',
+            'junit.jupiter.execution.parallel.mode.default': 'concurrent'
+    ]
 }
 
 javadoc {
@@ -86,7 +93,7 @@ javadoc {
 }
 
 jar {
-    manifest.attributes('Built-By': System.properties['user.name'],
+    manifest.attributes('Built-By': System.properties.get('user.name'),
             'Bundle-Name': fullName,
             'Bundle-Vendor': teamName,
             'Bundle-Description': fullDescription,
@@ -95,7 +102,7 @@ jar {
 }
 
 tasks.withType(Test) {
-    maxParallelForks = Math.max(Math.floor(Runtime.runtime.availableProcessors() / 2), 1)
+    maxParallelForks = (int) Math.max(Math.floor(Runtime.runtime.availableProcessors() / 2), 1)
 }
 
 task setUpGitHooks(type: Exec, description: 'Add a pre-commit git hook that runs gradle check & test tasks') {
