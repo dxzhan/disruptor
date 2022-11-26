@@ -1,13 +1,12 @@
 package com.lmax.disruptor;
 
-import com.lmax.disruptor.alternatives.MultiProducerSequencerUnsafe;
-import com.lmax.disruptor.alternatives.MultiProducerSequencerVarHandle;
+import com.lmax.disruptor.util.SimpleEvent;
+import com.lmax.disruptor.util.UnsafeAccess;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Group;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
@@ -21,7 +20,11 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import sun.misc.Unsafe;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +40,8 @@ import static java.util.function.Predicate.not;
 @Measurement(iterations = 5, time = 1)
 @Fork(2)
 @Threads(1)
-public class MultiProducerSequencerBenchmark
+@State(Scope.Thread)
+public class ArrayAccessBenchmark
 {
     // To run this on a tuned system with benchmark threads pinned to isolated cpus:
     // Run the JMH process with an env var defining the isolated cpu list, e.g. ISOLATED_CPUS=38,40,42,44,46,48 java -jar disruptor-jmh.jar
@@ -96,114 +100,71 @@ public class MultiProducerSequencerBenchmark
         }
     }
 
-    /*
-     * com.lmax.disruptor.alternatives.MultiProducerSequencerUnsafe (as of disruptor v3.4.2)
-     */
-    @State(Scope.Group)
-    public static class StateMultiProducerSequencerUnsafe
+    private static final int EVENT_COUNT = 64;
+    private static final int INDEX_MASK = EVENT_COUNT - 1;
+    private final Object[] entries = new Object[EVENT_COUNT];
+    public int sequence;
+
+    private static final Unsafe UNSAFE = UnsafeAccess.getUnsafe();
+    private final int scale = UNSAFE.arrayIndexScale(Object[].class);
+    private final int offset = UNSAFE.arrayBaseOffset(Object[].class);
+
+    private final VarHandle varHandle = MethodHandles.arrayElementVarHandle(Object[].class);
+
+    private final MethodHandle methodHandle = MethodHandles.arrayElementGetter(Object[].class);
+
+    @Setup
+    public void setup()
     {
-        Sequencer value1 = new MultiProducerSequencerUnsafe(64, new BlockingWaitStrategy());
-        Sequencer value2 = new MultiProducerSequencerUnsafe(64, new BlockingWaitStrategy());
+        for (int i = 0; i < EVENT_COUNT; i++)
+        {
+            SimpleEvent simpleEvent = new SimpleEvent();
+            simpleEvent.setValue(i);
+            entries[i] = simpleEvent;
+        }
+
+        sequence = 0;
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public boolean read1(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    public Object standardArrayAccess(final ThreadPinningState t)
     {
-        return s.value1.isAvailable(1);
+        return entries[getNextSequence()];
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public boolean read2(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    public Object unsafeArrayAccess(final ThreadPinningState t)
     {
-        return s.value1.isAvailable(1);
+        return UNSAFE.getObject(entries, offset + ((long) (getNextSequence()) * scale));
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue1A(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    public Object varHandleArrayAccess(final ThreadPinningState t)
     {
-        s.value1.publish(1L);
+        return varHandle.get(entries, getNextSequence());
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue1B(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    public Object getterMethodHandleInvokeArrayAccess(final ThreadPinningState t) throws Throwable
     {
-        s.value1.publish(2L);
+        return methodHandle.invoke(entries, getNextSequence());
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue2A(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    public Object getterMethodHandleInvokeExactArrayAccess(final ThreadPinningState t) throws Throwable
     {
-        s.value2.publish(1L);
+        return methodHandle.invokeExact(entries, getNextSequence());
     }
 
-    @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue2B(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    private int getNextSequence()
     {
-        s.value2.publish(2L);
-    }
-
-    /*
-     * com.lmax.disruptor.alternatives.StateSequenceVarHandle (as of disruptor v3.4.2)
-     */
-    @State(Scope.Group)
-    public static class StateMultiProducerSequencerVarHandle
-    {
-        Sequencer value1 = new MultiProducerSequencerVarHandle(64, new BlockingWaitStrategy());
-        Sequencer value2 = new MultiProducerSequencerVarHandle(64, new BlockingWaitStrategy());
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public boolean read1(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        return s.value1.isAvailable(1);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public boolean read2(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        return s.value1.isAvailable(1);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue1A(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value1.publish(1L);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue1B(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value1.publish(2L);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue2A(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value2.publish(1L);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue2B(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value2.publish(2L);
+        return sequence++ & INDEX_MASK;
     }
 
     public static void main(final String[] args) throws RunnerException
     {
         Options opt = new OptionsBuilder()
-                .include(MultiProducerSequencerBenchmark.class.getSimpleName())
+                .include(ArrayAccessBenchmark.class.getSimpleName())
                 .build();
         new Runner(opt).run();
     }

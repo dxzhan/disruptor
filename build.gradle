@@ -20,13 +20,14 @@ plugins {
     id 'checkstyle'
     id 'idea'
     id "io.github.reyerizo.gradle.jcstress" version "0.8.11"
-    id 'org.asciidoctor.jvm.convert' version '3.3.0'
-    id 'org.asciidoctor.jvm.gems' version '3.3.0'
+    id 'org.asciidoctor.jvm.convert' version '3.3.2'
+    id 'org.asciidoctor.jvm.gems' version '3.3.2'
     id "me.champeau.jmh" version "0.6.5"
+    id "biz.aQute.bnd.builder" version "5.3.0"
 }
 
 group = 'com.lmax'
-version = new Version(major: 4, minor: 0, revision: 0, snapshot: true)
+version = new Version(major: 4, minor: 0, revision: 0, stage: 'RC2', snapshot: true)
 
 defaultTasks 'build'
 
@@ -45,7 +46,7 @@ apply from: 'gradle/jmh.gradle'
 apply from: 'gradle/asciidoc.gradle'
 apply from: 'gradle/jcstress.gradle'
 
-wrapper.gradleVersion = '7.1'
+wrapper.gradleVersion = '7.2'
 
 repositories {
     mavenCentral()
@@ -55,8 +56,8 @@ repositories {
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_11
 
 dependencies {
-    checkstyle 'com.puppycrawl.tools:checkstyle:8.45'
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+    checkstyle 'com.puppycrawl.tools:checkstyle:9.0.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.hamcrest:hamcrest:2.2'
 }
 
@@ -94,11 +95,17 @@ javadoc {
 
 jar {
     manifest.attributes('Built-By': System.properties.get('user.name'),
+            'Automatic-Module-Name': moduleName)
+    bnd(
+            '-exportcontents': 'com.lmax.disruptor.*;-noimport:=true',
+            '-noimportjava': 'true',
+            'Import-Package': '!*',
             'Bundle-Name': fullName,
             'Bundle-Vendor': teamName,
             'Bundle-Description': fullDescription,
             'Bundle-DocURL': siteUrl,
-            'Automatic-Module-Name': moduleName)
+            'Bundle-SymbolicName': moduleName,
+    )
 }
 
 tasks.withType(Test) {

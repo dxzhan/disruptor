@@ -1,7 +1,9 @@
 package com.lmax.disruptor;
 
-import com.lmax.disruptor.alternatives.MultiProducerSequencerUnsafe;
-import com.lmax.disruptor.alternatives.MultiProducerSequencerVarHandle;
+import com.lmax.disruptor.alternatives.RingBufferArray;
+import com.lmax.disruptor.alternatives.RingBufferUnsafe;
+import com.lmax.disruptor.support.DummyWaitStrategy;
+import com.lmax.disruptor.support.StubEvent;
 import net.openhft.affinity.Affinity;
 import net.openhft.affinity.AffinityLock;
 import org.openjdk.jmh.annotations.Benchmark;
@@ -30,14 +32,14 @@ import java.util.stream.Collectors;
 
 import static java.util.function.Predicate.not;
 
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 5, time = 1)
 @Measurement(iterations = 5, time = 1)
 @Fork(2)
 @Threads(1)
-public class MultiProducerSequencerBenchmark
+public class RingBufferBenchmark
 {
     // To run this on a tuned system with benchmark threads pinned to isolated cpus:
     // Run the JMH process with an env var defining the isolated cpu list, e.g. ISOLATED_CPUS=38,40,42,44,46,48 java -jar disruptor-jmh.jar
@@ -97,113 +99,63 @@ public class MultiProducerSequencerBenchmark
     }
 
     /*
-     * com.lmax.disruptor.alternatives.MultiProducerSequencerUnsafe (as of disruptor v3.4.2)
+     * APPROACH 1: RingBufferUnsafe - Using the unsafe API to avoid bounds-checking, as was the case for Disruptor 3.x
      */
+
     @State(Scope.Group)
-    public static class StateMultiProducerSequencerUnsafe
+    public static class StateRingBufferUnsafe
     {
-        Sequencer value1 = new MultiProducerSequencerUnsafe(64, new BlockingWaitStrategy());
-        Sequencer value2 = new MultiProducerSequencerUnsafe(64, new BlockingWaitStrategy());
+        RingBufferUnsafe<Object> ringBufferUnsafe = new RingBufferUnsafe<>(
+                () -> new StubEvent(-1),
+                new SingleProducerSequencer(128, new DummyWaitStrategy()));
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public boolean read1(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    @Group("RingBufferUnsafe")
+    public Object readUnsafe(final StateRingBufferUnsafe ringBufferUnsafe, final ThreadPinningState t)
     {
-        return s.value1.isAvailable(1);
+        return ringBufferUnsafe.ringBufferUnsafe.get(64);
     }
 
     @Benchmark
-    @Group("SequenceUnsafe")
-    public boolean read2(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
+    @Group("RingBufferUnsafe")
+    public void writeUnsafe(final StateRingBufferUnsafe ringBufferUnsafe, final ThreadPinningState t)
     {
-        return s.value1.isAvailable(1);
-    }
-
-    @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue1A(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
-    {
-        s.value1.publish(1L);
-    }
-
-    @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue1B(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
-    {
-        s.value1.publish(2L);
-    }
-
-    @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue2A(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
-    {
-        s.value2.publish(1L);
-    }
-
-    @Benchmark
-    @Group("SequenceUnsafe")
-    public void setValue2B(final StateMultiProducerSequencerUnsafe s, final ThreadPinningState t)
-    {
-        s.value2.publish(2L);
+        ringBufferUnsafe.ringBufferUnsafe.publish(64);
     }
 
     /*
-     * com.lmax.disruptor.alternatives.StateSequenceVarHandle (as of disruptor v3.4.2)
+     * APPROACH 2: RingBufferArray - There is no support for non-bounds-checked array element access as there was via
+     * unsafe. So the simplest approach is to go back to a plain array and index to elements.
      */
+
     @State(Scope.Group)
-    public static class StateMultiProducerSequencerVarHandle
+    public static class StateRingBufferArray
     {
-        Sequencer value1 = new MultiProducerSequencerVarHandle(64, new BlockingWaitStrategy());
-        Sequencer value2 = new MultiProducerSequencerVarHandle(64, new BlockingWaitStrategy());
+        RingBufferArray<Object> ringBufferVarHandle = new RingBufferArray<>(
+                () -> new StubEvent(-1),
+                new SingleProducerSequencer(128, new DummyWaitStrategy())
+        );
     }
 
     @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public boolean read1(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
+    @Group("RingBufferArray")
+    public Object readArray(final StateRingBufferArray ringBufferVarHandle, final ThreadPinningState t)
     {
-        return s.value1.isAvailable(1);
+        return ringBufferVarHandle.ringBufferVarHandle.get(64);
     }
 
     @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public boolean read2(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
+    @Group("RingBufferArray")
+    public void writeArray(final StateRingBufferArray ringBufferVarHandle, final ThreadPinningState t)
     {
-        return s.value1.isAvailable(1);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue1A(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value1.publish(1L);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue1B(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value1.publish(2L);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue2A(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value2.publish(1L);
-    }
-
-    @Benchmark
-    @Group("StateMultiProducerSequencerVarHandle")
-    public void setValue2B(final StateMultiProducerSequencerVarHandle s, final ThreadPinningState t)
-    {
-        s.value2.publish(2L);
+        ringBufferVarHandle.ringBufferVarHandle.publish(64);
     }
 
     public static void main(final String[] args) throws RunnerException
     {
         Options opt = new OptionsBuilder()
-                .include(MultiProducerSequencerBenchmark.class.getSimpleName())
+                .include(RingBufferBenchmark.class.getSimpleName())
                 .build();
         new Runner(opt).run();
     }
