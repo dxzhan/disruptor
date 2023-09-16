@@ -44,7 +44,7 @@ public final class BatchEventProcessorTest
     {
         assertThrows(NullPointerException.class, () ->
         {
-            final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
+            final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
                     ringBuffer, sequenceBarrier, new ExceptionEventHandler());
             batchEventProcessor.setExceptionHandler(null);
         });
@@ -56,7 +56,7 @@ public final class BatchEventProcessorTest
     {
         CountDownLatch eventLatch = new CountDownLatch(3);
         LatchEventHandler eventHandler = new LatchEventHandler(eventLatch);
-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
+        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
                 ringBuffer, sequenceBarrier, eventHandler);
 
         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
@@ -80,7 +80,7 @@ public final class BatchEventProcessorTest
     {
         CountDownLatch exceptionLatch = new CountDownLatch(1);
         LatchExceptionHandler latchExceptionHandler = new LatchExceptionHandler(exceptionLatch);
-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
+        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
                 ringBuffer, sequenceBarrier, new ExceptionEventHandler());
         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
 
@@ -162,7 +162,7 @@ public final class BatchEventProcessorTest
         {
 
             @Override
-            public void onBatchStart(final long batchSize)
+            public void onBatchStart(final long batchSize, final long queueDepth)
             {
                 batchSizes.add(batchSize);
             }
@@ -180,7 +180,7 @@ public final class BatchEventProcessorTest
         }
 
         final BatchEventProcessor<StubEvent> batchEventProcessor =
-                new BatchEventProcessor<>(
+                new BatchEventProcessorBuilder().build(
                         ringBuffer, sequenceBarrier, new LoopbackEventHandler());
 
         ringBuffer.publish(ringBuffer.next());
@@ -207,7 +207,7 @@ public final class BatchEventProcessorTest
         DataProvider<Object> dp = sequence -> null;
 
         final LatchLifeCycleHandler h1 = new LatchLifeCycleHandler();
-        final BatchEventProcessor p1 = new BatchEventProcessor<>(dp, barrier, h1);
+        final BatchEventProcessor p1 = new BatchEventProcessorBuilder().build(dp, barrier, h1);
 
         Thread t1 = new Thread(p1);
         p1.halt();
@@ -219,7 +219,7 @@ public final class BatchEventProcessorTest
         for (int i = 0; i < 1000; i++)
         {
             final LatchLifeCycleHandler h2 = new LatchLifeCycleHandler();
-            final BatchEventProcessor p2 = new BatchEventProcessor<>(dp, barrier, h2);
+            final BatchEventProcessor p2 = new BatchEventProcessorBuilder().build(dp, barrier, h2);
             Thread t2 = new Thread(p2);
             t2.start();
             p2.halt();
@@ -231,7 +231,7 @@ public final class BatchEventProcessorTest
         for (int i = 0; i < 1000; i++)
         {
             final LatchLifeCycleHandler h2 = new LatchLifeCycleHandler();
-            final BatchEventProcessor p2 = new BatchEventProcessor<>(dp, barrier, h2);
+            final BatchEventProcessor p2 = new BatchEventProcessorBuilder().build(dp, barrier, h2);
             Thread t2 = new Thread(p2);
             t2.start();
             Thread.yield();
@@ -282,7 +282,7 @@ public final class BatchEventProcessorTest
     {
         BatchAwareEventHandler eventHandler = new BatchAwareEventHandler();
 
-        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessor<>(
+        final BatchEventProcessor<StubEvent> batchEventProcessor = new BatchEventProcessorBuilder().build(
                 ringBuffer, new DelegatingSequenceBarrier(this.sequenceBarrier), eventHandler);
 
         ringBuffer.addGatingSequences(batchEventProcessor.getSequence());
@@ -364,7 +364,7 @@ public final class BatchEventProcessorTest
         }
 
         @Override
-        public void onBatchStart(final long batchSize)
+        public void onBatchStart(final long batchSize, final long queueDepth)
         {
             final Integer currentCount = batchSizeToCountMap.get(batchSize);
             final int nextCount = null == currentCount ? 1 : currentCount + 1;
