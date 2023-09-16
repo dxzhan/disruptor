@@ -446,22 +446,22 @@ td.linenos .special { color: #000000; background-color: #ffffc0; padding-left: 5
 span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 5px; padding-right: 5px; }
 pre.pygments .hll { background-color: #ffffcc }
 pre.pygments { background: #f8f8f8; }
-pre.pygments .tok-c { color: #408080; font-style: italic } /* Comment */
+pre.pygments .tok-c { color: #3D7B7B; font-style: italic } /* Comment */
 pre.pygments .tok-err { border: 1px solid #FF0000 } /* Error */
 pre.pygments .tok-k { color: #008000; font-weight: bold } /* Keyword */
 pre.pygments .tok-o { color: #666666 } /* Operator */
-pre.pygments .tok-ch { color: #408080; font-style: italic } /* Comment.Hashbang */
-pre.pygments .tok-cm { color: #408080; font-style: italic } /* Comment.Multiline */
-pre.pygments .tok-cp { color: #BC7A00 } /* Comment.Preproc */
-pre.pygments .tok-cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
-pre.pygments .tok-c1 { color: #408080; font-style: italic } /* Comment.Single */
-pre.pygments .tok-cs { color: #408080; font-style: italic } /* Comment.Special */
+pre.pygments .tok-ch { color: #3D7B7B; font-style: italic } /* Comment.Hashbang */
+pre.pygments .tok-cm { color: #3D7B7B; font-style: italic } /* Comment.Multiline */
+pre.pygments .tok-cp { color: #9C6500 } /* Comment.Preproc */
+pre.pygments .tok-cpf { color: #3D7B7B; font-style: italic } /* Comment.PreprocFile */
+pre.pygments .tok-c1 { color: #3D7B7B; font-style: italic } /* Comment.Single */
+pre.pygments .tok-cs { color: #3D7B7B; font-style: italic } /* Comment.Special */
 pre.pygments .tok-gd { color: #A00000 } /* Generic.Deleted */
 pre.pygments .tok-ge { font-style: italic } /* Generic.Emph */
-pre.pygments .tok-gr { color: #FF0000 } /* Generic.Error */
+pre.pygments .tok-gr { color: #E40000 } /* Generic.Error */
 pre.pygments .tok-gh { color: #000080; font-weight: bold } /* Generic.Heading */
-pre.pygments .tok-gi { color: #00A000 } /* Generic.Inserted */
-pre.pygments .tok-go { color: #888888 } /* Generic.Output */
+pre.pygments .tok-gi { color: #008400 } /* Generic.Inserted */
+pre.pygments .tok-go { color: #717171 } /* Generic.Output */
 pre.pygments .tok-gp { color: #000080; font-weight: bold } /* Generic.Prompt */
 pre.pygments .tok-gs { font-weight: bold } /* Generic.Strong */
 pre.pygments .tok-gu { color: #800080; font-weight: bold } /* Generic.Subheading */
@@ -474,15 +474,15 @@ pre.pygments .tok-kr { color: #008000; font-weight: bold } /* Keyword.Reserved *
 pre.pygments .tok-kt { color: #B00040 } /* Keyword.Type */
 pre.pygments .tok-m { color: #666666 } /* Literal.Number */
 pre.pygments .tok-s { color: #BA2121 } /* Literal.String */
-pre.pygments .tok-na { color: #7D9029 } /* Name.Attribute */
+pre.pygments .tok-na { color: #687822 } /* Name.Attribute */
 pre.pygments .tok-nb { color: #008000 } /* Name.Builtin */
 pre.pygments .tok-nc { color: #0000FF; font-weight: bold } /* Name.Class */
 pre.pygments .tok-no { color: #880000 } /* Name.Constant */
 pre.pygments .tok-nd { color: #AA22FF } /* Name.Decorator */
-pre.pygments .tok-ni { color: #999999; font-weight: bold } /* Name.Entity */
-pre.pygments .tok-ne { color: #D2413A; font-weight: bold } /* Name.Exception */
+pre.pygments .tok-ni { color: #717171; font-weight: bold } /* Name.Entity */
+pre.pygments .tok-ne { color: #CB3F38; font-weight: bold } /* Name.Exception */
 pre.pygments .tok-nf { color: #0000FF } /* Name.Function */
-pre.pygments .tok-nl { color: #A0A000 } /* Name.Label */
+pre.pygments .tok-nl { color: #767600 } /* Name.Label */
 pre.pygments .tok-nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
 pre.pygments .tok-nt { color: #008000; font-weight: bold } /* Name.Tag */
 pre.pygments .tok-nv { color: #19177C } /* Name.Variable */
@@ -499,11 +499,11 @@ pre.pygments .tok-sc { color: #BA2121 } /* Literal.String.Char */
 pre.pygments .tok-dl { color: #BA2121 } /* Literal.String.Delimiter */
 pre.pygments .tok-sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
 pre.pygments .tok-s2 { color: #BA2121 } /* Literal.String.Double */
-pre.pygments .tok-se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
+pre.pygments .tok-se { color: #AA5D1F; font-weight: bold } /* Literal.String.Escape */
 pre.pygments .tok-sh { color: #BA2121 } /* Literal.String.Heredoc */
-pre.pygments .tok-si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
+pre.pygments .tok-si { color: #A45A77; font-weight: bold } /* Literal.String.Interpol */
 pre.pygments .tok-sx { color: #008000 } /* Literal.String.Other */
-pre.pygments .tok-sr { color: #BB6688 } /* Literal.String.Regex */
+pre.pygments .tok-sr { color: #A45A77 } /* Literal.String.Regex */
 pre.pygments .tok-s1 { color: #BA2121 } /* Literal.String.Single */
 pre.pygments .tok-ss { color: #19177C } /* Literal.String.Symbol */
 pre.pygments .tok-bp { color: #008000 } /* Name.Builtin.Pseudo */
@@ -781,7 +781,7 @@ Disruptor makes.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>If you are on version 2.1.17 or greater, paste the text below to generate a GPG key pair:</p>
+<p>If you are on version 2.1.17 or greater, run the command below to generate a GPG key pair:</p>
 <div class="openblock">
 <div class="content">
 <div class="listingblock">
@@ -792,7 +792,7 @@ Disruptor makes.</p>
 <div class="ulist">
 <ul>
 <li>
-<p>At the prompt, specify the kind of key you want, or press Enter to accept the default RSA and RSA.</p>
+<p>At the prompt, specify the kind of key you want, or press Enter to accept the default <code>RSA and RSA</code>.</p>
 </li>
 <li>
 <p>Enter the desired key size. Your key must be at least 4096 bits.</p>
@@ -800,19 +800,13 @@ Disruptor makes.</p>
 <li>
 <p>Enter the length of time the key should be valid. Press Enter to specify the default selection, indicating that the key doesn&#8217;t expire.</p>
 </li>
-<li>
-<p>At the prompt, specify the kind of key you want, or press Enter to accept the default RSA and RSA</p>
-</li>
-<li>
-<p>At the prompt, specify the kind of key you want, or press Enter to accept the default RSA and RSA</p>
-</li>
 </ul>
 </div>
 </div>
 </div>
 </li>
 <li>
-<p>If you are not on version 2.1.17 or greater, the <code>gpg --full-generate-key</code> command doesn&#8217;t work:</p>
+<p>If you are not on version 2.1.17 or greater, the <code>gpg --full-generate-key</code> command doesn&#8217;t work. Use the following command instead:</p>
 <div class="openblock">
 <div class="content">
 <div class="listingblock">
@@ -852,7 +846,7 @@ Disruptor makes.</p>
 <div class="ulist">
 <ul>
 <li>
-<p><code>signing.keyId</code> is the last 8 characters of the public key id for the signing key, in this example, <code>9F712BEC</code>.</p>
+<p><code>signing.keyId</code> is the last 8 characters of the public key id for the signing key, in this example, <code>2657EDD1</code>.</p>
 </li>
 <li>
 <p><code>signing.password</code> is the passphrase for your keyring</p>
@@ -867,13 +861,14 @@ Disruptor makes.</p>
 <pre class="pygments highlight"><code data-lang="shell script"><span></span>$ gpg --list-secret-keys --keyid-format SHORT
 /home/dev/.gnupg/pubring.kbx
 -----------------------------
-sec   rsa4096/9F712BEC 2021-04-13 [SC]
-      6B76BC6777E78FB33B2C2D0A3A7EE8C49F712BEC
-uid         [ultimate] LMAX Coder (LMAX Developer) &lt;coders@lmax.com&gt;
-ssb   rsa4096/A97D3F8A 2021-04-13 [E]
+sec   rsa4096/2657EDD1 2021-12-31 [SC]
+      EA38CE5CFD74BBB831611491F9CE691A2657EDD1
+uid         [ultimate] LMAX Coders (LMAX Dev Team) &lt;coders@lmax.com&gt;
+ssb   rsa4096/F4831415 2021-12-31 [E]
+
 
 $ cat gradle.properties
-signing.keyId=9F712BEC
+signing.keyId=2657EDD1
 signing.password=&lt;passphrase used to protect your private key&gt;
 signing.secretKeyRingFile=/home/dev/.gnupg/secring.gpg</code></pre>
 </div>
@@ -889,7 +884,7 @@ signing.secretKeyRingFile=/home/dev/.gnupg/secring.gpg</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>gpg --keyserver https://keyserver.ubuntu.com/ --send-keys 9F712BEC</pre>
+<pre>gpg --keyserver https://keyserver.ubuntu.com/ --send-keys 2657EDD1</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1038,7 +1033,7 @@ hook which will block any commit you try to do locally if the code fails these s
 <div id="footer">
 <div id="footer-text">
 Version 4.0.0-SNAPSHOT<br>
-Last updated 2021-08-23 08:13:55 UTC
+Last updated 2023-09-16 10:57:21 UTC
 </div>
 </div>
 </body>
